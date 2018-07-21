@@ -44,9 +44,12 @@ let getMoney = (user) => {
   });
 }
 
-getUser(3).then((user) => {
-  console.log(user);
-  getMoney(user).then((ans) => {
-    console.log(ans);
-  }, (err) => console.log(err));
-}, (err) => console.log(err));
+getUser(10).then((user) => {
+  return getMoney(user);
+})
+.then((ans) => {
+  console.log(ans);
+})
+.catch((err) => {
+  console.log(err);
+});
