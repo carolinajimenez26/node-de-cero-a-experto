@@ -5,7 +5,27 @@ const express = require('express'),
       _ = require('underscore');
 
 app.get('/users', (req, res) => {
-    res.send('get users');
+  let from = Number(req.query.from) || 0,
+      limit = Number(req.query.limit) || 5;
+
+    User.find({'state': true}, 'name email state')
+        .limit(limit)
+        .skip(from)
+        .exec((err, users) => {
+          if (err) {
+              return res.status(400).json({
+                  ok: false,
+                  err
+              });
+          }
+          User.count({'state': true}, (err, count) => {
+            res.json({
+              ok: true,
+              users,
+              count
+            });
+          });
+        });
 });
 
 app.post('/users', (req, res) => {
@@ -54,8 +74,54 @@ app.put('/users/:id', (req, res) => {
     });
 });
 
-app.delete('/users', (req, res) => {
-    res.send('delete users');
+app.delete('/users/:id', (req, res) => {
+    let id = req.params.id;
+    let body = {'state': false};
+    let ops = {new: true};
+
+    User.findByIdAndUpdate(id, body, ops, (err, userDB) => {
+        if (err) {
+            return res.status(400).json({
+                ok: false,
+                err
+            });
+        }
+        if (!userDB) {
+            return res.status(400).json({
+                ok: false,
+                message: 'User not found'
+            });
+        }
+        res.json({
+            ok: true,
+            user: userDB
+        });
+    });
+});
+
+app.delete('/users/deleteCompletly/:id', (req, res) => {
+    let id = req.params.id;
+
+    User.findByIdAndRemove(id, (err, deletedUser) => {
+      if (err) {
+          return res.status(400).json({
+              ok: false,
+              err
+          });
+      }
+
+      if (!deletedUser) {
+          return res.status(400).json({
+              ok: false,
+              message: 'User not found'
+          });
+      }
+
+      res.json({
+          ok: true,
+          user: deletedUser
+      });
+    });
 });
 
 module.exports = app;

@@ -7,13 +7,13 @@ const express = require('express'),
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));
- 
+
 // parse application/json
 app.use(bodyParser.json());
 
 app.use(require('./routes/users'));
 
-mongoose.connect('mongodb://localhost:27017/coffee', (err, res) => {
+mongoose.connect(process.env.URLDB, (err, res) => {
     if (err) throw err;
     console.log(`Connected to MongoDB coffee`);
 });
