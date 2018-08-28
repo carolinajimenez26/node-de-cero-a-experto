@@ -2,9 +2,10 @@ const express = require('express'),
       app = express(),
       User = require('../models/user'),
       bcrypt = require('bcrypt'),
-      _ = require('underscore');
+      _ = require('underscore'),
+      { verifyToken, verifyAdmin } = require('../middlewares/auth');
 
-app.get('/users', (req, res) => {
+app.get('/users', verifyToken, (req, res) => {
   let from = Number(req.query.from) || 0,
       limit = Number(req.query.limit) || 5;
 
@@ -28,7 +29,7 @@ app.get('/users', (req, res) => {
         });
 });
 
-app.post('/users', (req, res) => {
+app.post('/users', [verifyToken, verifyAdmin], (req, res) => {
     let body = req.body;
     let user = new User({
         name: body.name,
@@ -52,7 +53,7 @@ app.post('/users', (req, res) => {
     });
 });
 
-app.put('/users/:id', (req, res) => {
+app.put('/users/:id', [verifyToken, verifyAdmin], (req, res) => {
     let id = req.params.id;
     let body = _.pick(req.body, ['name', 'lastname', 'email', 'img', 'role', 'state']);
     let ops = {
@@ -74,7 +75,7 @@ app.put('/users/:id', (req, res) => {
     });
 });
 
-app.delete('/users/:id', (req, res) => {
+app.delete('/users/:id', [verifyToken, verifyAdmin], (req, res) => {
     let id = req.params.id;
     let body = {'state': false};
     let ops = {new: true};
@@ -99,7 +100,7 @@ app.delete('/users/:id', (req, res) => {
     });
 });
 
-app.delete('/users/deleteCompletly/:id', (req, res) => {
+app.delete('/users/deleteCompletly/:id', [verifyToken, verifyAdmin], (req, res) => {
     let id = req.params.id;
 
     User.findByIdAndRemove(id, (err, deletedUser) => {
